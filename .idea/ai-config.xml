@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <!-- AI Assistant Configuration - ALL DISABLED -->
+  <component name="AiAssistant">
+    <option name="enabled" value="false" />
+    <option name="inlineCompletionEnabled" value="false" />
+    <option name="chatEnabled" value="false" />
+  </component>
+
+  <component name="MLCompletion">
+    <option name="enabled" value="false" />
+    <option name="fullLineCompletionEnabled" value="false" />
+    <option name="cloudEnabled" value="false" />
+  </component>
+
+  <component name="CopilotSettings">
+    <option name="enabled" value="false" />
+    <option name="completionsEnabled" value="false" />
+    <option name="chatEnabled" value="false" />
+  </component>
+
+  <component name="GoogleCloudCodeSettings">
+    <option name="enabled" value="false" />
+    <option name="geminiEnabled" value="false" />
+    <option name="codeCompletionEnabled" value="false" />
+    <option name="aiAssistanceEnabled" value="false" />
+  </component>
+
+  <component name="GeminiSettings">
+    <option name="enabled" value="false" />
+    <option name="codeGenerationEnabled" value="false" />
+    <option name="chatEnabled" value="false" />
+  </component>
+</project>

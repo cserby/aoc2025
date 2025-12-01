@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="AI Free Project" />
+    <inspection_tool class="AIAssistantInspection" enabled="false" level="INFORMATION" enabled_by_default="false" />
+    <inspection_tool class="MLCompletion" enabled="false" level="INFORMATION" enabled_by_default="false" />
+  </profile>
+</component>

@@ -1,0 +1,37 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+max_line_length = 140
+
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{kt,kts}]
+indent_size = 4
+
+ktlint_code_style = ktlint_official
+ktlint_ignore_back_ticked_identifier = true
+
+ktlint_standard = enabled
+
+# Prevent excessive new lines by ktlint
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_string-template-indent = disabled
+
+# Don't allow any wildcard imports
+ij_kotlin_packages_to_use_import_on_demand = unset
+
+# Prevent wildcard imports
+ij_kotlin_name_count_to_use_star_import = 99
+ij_kotlin_name_count_to_use_star_import_for_members = 99
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = unset
+
+[*.{yml,yaml}]
+ij_yaml_spaces_within_brackets = false

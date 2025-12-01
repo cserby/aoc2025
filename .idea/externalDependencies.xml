@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalDependencies">
+    <!-- AI Assistants - Explicitly marked as NOT required -->
+    <!-- These plugins should NOT be used in this project -->
+    <plugin id="com.github.copilot" />
+    <plugin id="com.tabnine.TabNine" />
+    <plugin id="com.codeium.intellij" />
+    <plugin id="aws.toolkit" />
+    <plugin id="com.jetbrains.packagesearch.intellij-plugin" />
+    <!-- Claude / Anthropic plugins -->
+    <plugin id="com.anthropic.claude" />
+    <plugin id="com.anthropic.claude-dev" />
+    <plugin id="claude-code" />
+    <!-- Google Gemini / AI plugins -->
+    <plugin id="com.google.gct.core" />
+    <plugin id="com.google.cloud.tools.intellij" />
+    <plugin id="com.google.cloudcode" />
+    <plugin id="com.google.generative-ai-studio" />
+  </component>
+</project>

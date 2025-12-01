@@ -1,0 +1,39 @@
+{
+  "files.autoSave": "afterDelay",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.tabSize": 4,
+  "[kotlin]": {
+    "editor.tabSize": 4
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "editor.guides.bracketPairs": true,
+  "terminal.integrated.scrollback": 100000,
+
+  "github.copilot.editor.enableAutoCompletions": false,
+  "github.copilot.enable": {
+    "*": false
+  },
+  "vsintellicode.modify.editor.suggestSelection": "disabled",
+  "vsintellicode.features.python.deepLearning": "disabled",
+  "vsintellicode.features.typescript.deepLearning": "disabled",
+  "editor.inlineSuggest.enabled": false,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  "tabnine.experimentalAutoImports": false,
+  "tabnine.disable_auto_update": true,
+  "Codeium.enableCodeLens": false,
+  "Codeium.enableConfig": {
+    "*": false
+  },
+  "aws.codeWhisperer.shareCodeWhispererContentWithAWS": false,
+  "claude-dev.enabled": false,
+  "claude-code.enabled": false,
+  "cloudcode.autoDependencies": false,
+  "generative-ai-studio.enabled": false
+}
