@@ -46,3 +46,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Advent of code ###
+**/*.example.txt
+**/*.input.txt
