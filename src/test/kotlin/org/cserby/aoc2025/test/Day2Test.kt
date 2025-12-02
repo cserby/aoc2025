@@ -17,11 +17,11 @@ class Day2Test {
 
     @Test
     fun part2example() {
-        assertEquals(-1, Day2.part2(Utils.readFile("/day2.example.txt")))
+        assertEquals(4174379265, Day2.part2(Utils.readFile("/day2.example.txt")))
     }
 
     @Test
     fun part2() {
-        assertEquals(-1, Day2.part2(Utils.readFile("/day2.input.txt")))
+        assertEquals(79183223243, Day2.part2(Utils.readFile("/day2.input.txt")))
     }
 }

@@ -18,5 +18,18 @@ object Day2 {
                 }
             }.fold(0L) { acc, curr -> acc + curr.toLong() }
 
-    fun part2(input: String): Int = -1
+    private fun part2invalid(id: String): Boolean =
+        (1..id.length / 2).fold(false) { soFar, repeatLen ->
+            soFar || id.chunked(repeatLen).let { chunkList ->
+                chunkList.all { it == chunkList.first() }
+            }
+        }
+
+    fun part2(input: String): Long =
+        parse(input)
+            .flatMap { range ->
+                (range.first..range.second).map { it.toString() }.filter {
+                    part2invalid(it)
+                }
+            }.fold(0L) { acc, curr -> acc + curr.toLong() }
 }
