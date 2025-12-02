@@ -1,12 +1,17 @@
 package org.cserby.aoc2025
 
 object Day1 {
-    private enum class Direction(dir: String) {
+    private enum class Direction(
+        dir: String,
+    ) {
         R("R"),
         L("L"),
     }
 
-    private data class Instruction(val direction: Direction, val steps: Int)
+    private data class Instruction(
+        val direction: Direction,
+        val steps: Int,
+    )
 
     private fun parse(lines: List<String>): List<Instruction> =
         lines.map { line ->
@@ -28,38 +33,41 @@ object Day1 {
     fun part1(
         input: String,
         startAt: Int = 50,
-    ): Int {
-        return parse(input.lines()).fold(Pair(startAt, 0)) { (state, zeroes), instruction ->
-            val newState = perform(state, instruction)
-            Pair(newState, if (newState == 0) zeroes + 1 else zeroes)
-        }.second
-    }
+    ): Int =
+        parse(input.lines())
+            .fold(Pair(startAt, 0)) { (state, zeroes), instruction ->
+                val newState = perform(state, instruction)
+                Pair(newState, if (newState == 0) zeroes + 1 else zeroes)
+            }.second
 
     private fun clicks(
         state: Int,
         instruction: Instruction,
     ) = sequence {
         when (instruction.direction) {
-            Direction.L ->
+            Direction.L -> {
                 (0 until instruction.steps).forEach { step ->
                     yield((state - step) % 100)
                 }
-            Direction.R ->
+            }
+
+            Direction.R -> {
                 (0 until instruction.steps).forEach { step ->
                     yield((state + step) % 100)
                 }
+            }
         }
     }
 
     fun part2(
         input: String,
         startAt: Int = 50,
-    ): Int {
-        return parse(input.lines()).fold(Pair(startAt, 0)) { (state, zeroes), instruction ->
-            val stepSequence = clicks(state, instruction)
-            val newZeroes = stepSequence.count { it == 0 }
-            val newState = perform(state, instruction)
-            Pair(newState, zeroes + newZeroes)
-        }.second
-    }
+    ): Int =
+        parse(input.lines())
+            .fold(Pair(startAt, 0)) { (state, zeroes), instruction ->
+                val stepSequence = clicks(state, instruction)
+                val newZeroes = stepSequence.count { it == 0 }
+                val newState = perform(state, instruction)
+                Pair(newState, zeroes + newZeroes)
+            }.second
 }
