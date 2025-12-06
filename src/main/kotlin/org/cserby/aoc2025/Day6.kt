@@ -1,5 +1,7 @@
 package org.cserby.aoc2025
 
+import kotlin.collections.get
+
 object Day6 {
     fun parse(input: String): List<List<String>> =
         input
@@ -25,5 +27,28 @@ object Day6 {
             evaluate(calculation)
         }
 
-    fun part2(input: String): Long = -1L
+    fun parse2(input: String): List<List<String>> =
+        input.lines().let { lines ->
+            val lineLength = lines.maxOf { it.length }
+            val operands = lines.last().trim().split(Regex("\\s+"))
+            val numbers = lines
+                .dropLast(1)
+                .map { line -> line.toCharArray() }
+                .let { matrix ->
+                    List(lineLength) { col ->
+                        List(matrix.size) { row ->
+                            matrix[row].getOrElse(col) { ' ' }
+                        }.joinToString(separator = "").trim()
+                    }
+                }.joinToString(separator = "\n")
+                .split("\n\n")
+                .map { line -> line.split("\n") }
+
+            numbers.mapIndexed { idx, numbers -> numbers + operands[idx] }
+        }
+
+    fun part2(input: String): Long =
+        parse2(input).sumOf { calculation ->
+            evaluate(calculation)
+        }
 }
