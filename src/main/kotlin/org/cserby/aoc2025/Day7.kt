@@ -45,7 +45,7 @@ object Day7 {
         tracedPoints: Set<Pair<Int, Int>> = emptySet(),
     ): List<TachionBeam> {
         if (beams.isEmpty()) return finishedBeams
-        val beamToTrace = beams.first()
+        val beamToTrace = beams.minBy { it.start.first }
 
         if (beamToTrace.start in tracedPoints) return trace(beams.minus(beamToTrace), field, finishedBeams, tracedPoints)
 
