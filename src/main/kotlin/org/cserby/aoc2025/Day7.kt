@@ -74,5 +74,24 @@ object Day7 {
             tracedBeams.size - tracedBeams.count { it.path(field).last().first == field.size - 1 }
         }
 
-    fun part2(input: String): Long = -1
+    val memo: MutableMap<Pair<Int, Int>, Long> = HashMap()
+
+    fun numberOfTimeLines(
+        beam: TachionBeam,
+        field: List<List<Char>>,
+    ): Long =
+        memo.getOrPut(beam.start) {
+            val beamEnd = beam.path(field).last()
+
+            if (beamEnd.first == field.size - 1) {
+                1
+            } else {
+                splitterNeighbors(beamEnd, field).sumOf { numberOfTimeLines(TachionBeam(it), field) }
+            }
+        }
+
+    fun part2(input: String): Long =
+        parse(input).let { (beams, field) ->
+            numberOfTimeLines(beams.first(), field)
+        }
 }
