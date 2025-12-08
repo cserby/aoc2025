@@ -12,7 +12,6 @@ class Day8Test {
 
     @Test
     fun part1() {
-        // too low
         assertEquals(52668, Day8.part1(Utils.readFile("/day8.input.txt")))
     }
 
