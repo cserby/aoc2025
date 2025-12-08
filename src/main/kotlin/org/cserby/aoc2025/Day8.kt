@@ -67,5 +67,24 @@ object Day8 {
             }
         }
 
-    fun part2(input: String): Int = -1
+    tailrec fun connect2(
+        circuits: Set<Set<JunctionBox>>,
+        distances: List<Pair<Pair<JunctionBox, JunctionBox>, Long>>,
+    ): Pair<JunctionBox, JunctionBox> {
+        val newConnection = distances.first()
+        val firstCircuit = circuits.find { newConnection.first.first in it }!!
+        val secondCircuit = circuits.find { newConnection.first.second in it }!!
+        val mergedCircuits = mergeCircuits(circuits, firstCircuit, secondCircuit)
+        return if (mergedCircuits.size == 1) {
+            newConnection.first
+        } else {
+            connect2(mergedCircuits, distances.drop(1))
+        }
+    }
+
+    fun part2(input: String): Long =
+        parse(input).let { junctionBoxes ->
+            val lastPair = connect2(junctionBoxes.map { setOf(it) }.toSet(), distances(junctionBoxes))
+            lastPair.first.x * lastPair.second.x
+        }
 }
