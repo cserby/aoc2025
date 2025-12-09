@@ -17,13 +17,9 @@ object Day8 {
             }
         }
 
-    fun <T> allPairs(lst: List<T>): List<Pair<T, T>> =
-        lst.flatMapIndexed { index, first ->
-            lst.drop(index).map { first to it }
-        }
-
     fun distances(junctionBoxes: List<JunctionBox>): List<Pair<Pair<JunctionBox, JunctionBox>, Long>> =
-        allPairs(junctionBoxes)
+        Utils
+            .allPairs(junctionBoxes)
             .map { (first, second) -> (first to second) to first.distance(second) }
             .filterNot { it.first.first == it.first.second }
             .sortedBy { it.second }
