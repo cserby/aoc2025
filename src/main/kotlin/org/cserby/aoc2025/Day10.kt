@@ -1,5 +1,18 @@
 package org.cserby.aoc2025
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.last
+
 object Day10 {
     data class Machine(
         val stateWidth: Int,
@@ -66,43 +79,61 @@ object Day10 {
         val expectedState: List<Int>,
         val buttons: List<List<Int>>,
     ) {
-        tailrec fun leastButtonPresses(
-            toCheckButtonIndexSequences: List<Pair<List<Int>, List<Int>>> = (0 until buttons.size).map {
-                listOf(it) to
-                    (0 until expectedState.size).map { 0 }
-            },
-            visitedStates: List<List<Int>> = listOf((0 until expectedState.size).map { 0 }),
-        ): List<Int> {
-            val (sequence, prevState) = toCheckButtonIndexSequences.first()
-            val newState = prevState.mapIndexed { index, prevBulbState ->
-                if (index in
-                    buttons[sequence.last()]
-                ) {
-                    prevBulbState + 1
+        private fun startState(width: Int = expectedState.size) = (0 until width).map { 0 }
+
+        fun pressButtons(pattern: List<Int>): List<Int> =
+            pattern.foldIndexed(startState()) { buttonIndex, state, buttonPressCount ->
+                state.zip(
+                    buttons[buttonIndex].map { it * buttonPressCount },
+                ) { stateValue, buttonPressCount -> stateValue + buttonPressCount }
+            }
+
+        fun maxPresses() = expectedState.max()
+
+        private val possiblePressPatternMemo = ConcurrentHashMap<Array<Int>, Boolean>()
+
+        fun possiblePressPattern(pattern: List<Int>): Boolean =
+            possiblePressPatternMemo.getOrPut(pattern.toTypedArray()) {
+                expectedState.zip(pressButtons((0 until buttons.size - pattern.size).map { 0 } + pattern)).all {
+                    it.first >= it.second
+                }
+            }
+
+        fun buttonPressPatterns(length: Int = buttons.size): Sequence<List<Int>> =
+            sequence {
+                generateSequence(1) { it + 1 }.forEach { yieldAll(buttonPressPatternsForSum(length, it)) }
+            }
+
+        fun buttonPressPatternsForSum(
+            length: Int = buttons.size,
+            sum: Int,
+        ): Sequence<List<Int>> =
+            sequence {
+                if (sum == 0) {
+                    yield((0 until length).map { 0 })
+                } else if (length == 1) {
+                    yield(listOf(sum))
                 } else {
-                    prevBulbState
+                    (0 until maxPresses()).forEach { value ->
+                        yieldAll(
+                            buttonPressPatternsForSum(
+                                length - 1,
+                                sum - value,
+                            ).map { listOf(value) + it }.filter { possiblePressPattern(it) },
+                        )
+                    }
                 }
             }
-            return when (newState) {
-                expectedState -> {
-                    return sequence
-                }
 
-                in visitedStates -> {
-                    leastButtonPresses(toCheckButtonIndexSequences.drop(1), visitedStates)
-                }
-
-                else -> {
-                    leastButtonPresses(
-                        toCheckButtonIndexSequences =
-                            toCheckButtonIndexSequences.drop(1) + (
-                                (0 until buttons.size).map { sequence + it to newState }
-                            ),
-                        visitedStates = visitedStates + listOf(newState),
-                    )
-                }
-            }
-        }
+        fun leastButtonPresses2(): List<Int> =
+            // runBlocking {
+            buttonPressPatterns()
+                // .flowOn(Dispatchers.Default)
+                .map { pressButtons(it) to it }
+                //      .toList()
+                .find { it.first == expectedState }!!
+                .second
+        // }
     }
 
     fun parse2(input: String): List<MachineJoltage> =
@@ -115,11 +146,21 @@ object Day10 {
                 .map { it.toInt() }
             MachineJoltage(
                 expectedState = expectedState,
-                buttons = lineParts.drop(1).dropLast(1).map { buttonSpec ->
-                    buttonSpec.filterNot { it in "()" }.split(",").map { it.toInt() }
-                },
+                buttons = lineParts
+                    .drop(1)
+                    .dropLast(1)
+                    .map { buttonSpec ->
+                        buttonSpec.filterNot { it in "()" }.split(",").map { it.toInt() }
+                    }.map { buttonIndexes ->
+                        (0 until expectedState.size).mapIndexed { index, _ -> if (index in buttonIndexes) 1 else 0 }
+                    },
             )
         }
 
-    fun part2(input: String): Int = parse2(input).sumOf { it.leastButtonPresses().size }
+    fun part2(input: String): Int =
+        parse2(input)
+            .mapIndexed { index, machine ->
+                System.err.println("Processing $index")
+                machine.leastButtonPresses2().sum()
+            }.sum()
 }
