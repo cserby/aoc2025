@@ -105,9 +105,13 @@ object Day10 {
                 stateVector.vecAdd(buttons[buttonIndex].vecMul(buttonPressCount))
             }
 
-        fun possiblePressPatternPrefix(patternPrefix: List<Int>): Boolean =
-            pressButtons(patternPrefix).zip(expectedState).let { pairs ->
-                pairs.all { it.first <= it.second }
+        fun possiblePressPatternPrefix(
+            patternPrefix: List<Int>,
+            sum: Int,
+        ): Boolean =
+            pressButtons(patternPrefix).let { stateSoFar ->
+                stateSoFar.zip(expectedState).all { it.first <= it.second } &&
+                    expectedState.vecMinus(stateSoFar).min() <= sum
             }
 
         fun buttonPressPatterns(): Sequence<List<Int>> =
@@ -137,7 +141,7 @@ object Day10 {
                     val button = buttons.first()
                     val maxPressesForButton = maxPresses(reducedState)[button]!!
                     (0..min(maxPressesForButton, sum)).forEach { value ->
-                        if (possiblePressPatternPrefix(prefix + value)) {
+                        if (possiblePressPatternPrefix(prefix + value, sum)) {
                             yieldAll(
                                 buttonPressPatternsForSum(
                                     buttons.drop(1),
