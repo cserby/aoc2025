@@ -77,80 +77,80 @@ object Day10 {
 
     fun part1(input: String): Int = parse(input).sumOf { it.leastButtonPresses().size }
 
+    fun List<Int>.vecMul(by: Int): List<Int> = this.map { it * by }
+
+    fun List<Int>.vecMinus(other: List<Int>) = this.zip(other) { a, b -> a - b }
+
+    fun List<Int>.vecAdd(other: List<Int>) = this.zip(other) { a, b -> a + b }
+
     data class MachineJoltage(
         val expectedState: List<Int>,
         val buttons: List<List<Int>>,
     ) {
         private val startState = (0 until expectedState.size).map { 0 }
 
-        val maxPresses: Map<List<Int>, Int> =
+        private val minPresses = expectedState.min()
+
+        private fun maxPresses(state: List<Int>): Map<List<Int>, Int> =
             buttons.associateWith { button ->
-                expectedState
+                state
                     .zip(button) { stateValue, buttonAffectsState ->
                         stateValue * buttonAffectsState
                     }.filterNot { it == 0 }
-                    .min()
+                    .minOrNull() ?: 0
             }
-
-        val pressButtonsMemo = mutableMapOf<List<Int>, List<Int>>()
 
         fun pressButtons(pattern: List<Int>): List<Int> =
-            pressButtonsMemo.getOrPut(pattern) {
-                pattern.foldIndexed(startState) { buttonIndex, stateVector, buttonPressCount ->
-                    stateVector.zip(buttons[buttonIndex]) { stateValue, buttonAffectsState ->
-                        stateValue + buttonAffectsState * buttonPressCount
-                    }
-                }
+            pattern.foldIndexed(startState) { buttonIndex, stateVector, buttonPressCount ->
+                stateVector.vecAdd(buttons[buttonIndex].vecMul(buttonPressCount))
             }
 
-        val possiblePressPatternMemo = mutableMapOf<List<Int>, Boolean>()
-
-        fun possiblePressPattern(pattern: List<Int>): Boolean =
-            possiblePressPatternMemo.getOrPut(pattern) {
-                expectedState.zip(pressButtons((0 until buttons.size - pattern.size).map { 0 } + pattern)).all {
-                    it.first >= it.second
-                }
+        fun possiblePressPatternPrefix(patternPrefix: List<Int>): Boolean =
+            pressButtons(patternPrefix).zip(expectedState).let { pairs ->
+                pairs.all { it.first <= it.second }
             }
 
         fun buttonPressPatterns(): Sequence<List<Int>> =
             sequence {
-                generateSequence(1) { it + 1 }.forEach { numPresses ->
-                    yieldAll(buttonPressPatternsForSum(buttons, numPresses))
+                generateSequence(minPresses) { it + 1 }.forEach { numPresses ->
+                    yieldAll(buttonPressPatternsForSum(buttons, numPresses, emptyList()))
                 }
             }
 
         fun buttonPressPatternsForSum(
             buttons: List<List<Int>>,
             sum: Int,
+            prefix: List<Int>,
         ): Sequence<List<Int>> =
             sequence {
                 if (sum == 0) {
-                    yield((0 until buttons.size).map { 0 })
+                    val pattern = prefix + (0 until buttons.size).map { 0 }
+                    if (pressButtons(pattern) == expectedState) {
+                        yield(pattern)
+                    }
                 } else if (buttons.size == 1) {
-                    yield(listOf(sum))
+                    if (pressButtons(prefix + sum) == expectedState) {
+                        yield(prefix + sum)
+                    }
                 } else {
+                    val reducedState = expectedState.vecMinus(pressButtons(prefix))
                     val button = buttons.first()
-                    val maxPressesForButton = maxPresses[button]!!
+                    val maxPressesForButton = maxPresses(reducedState)[button]!!
                     (0..min(maxPressesForButton, sum)).forEach { value ->
-                        yieldAll(
-                            buttonPressPatternsForSum(
-                                buttons.drop(1),
-                                sum - value,
-                            ).map { it + value }.filter { possiblePressPattern(it.reversed()) },
-                        )
+                        if (possiblePressPatternPrefix(prefix + value)) {
+                            yieldAll(
+                                buttonPressPatternsForSum(
+                                    buttons.drop(1),
+                                    sum - value,
+                                    prefix + value,
+                                ),
+                            )
+                        }
                     }
                 }
             }
 
-        fun leastButtonPresses2(): List<Int> =
-            // runBlocking {
-            buttonPressPatterns()
-                // .flowOn(Dispatchers.Default)
-                .map { pressButtons(it.reversed()) to it }
-                //      .toList()
-                .find { it.first == expectedState }!!
-                .second
-        // }
+        fun leastButtonPresses2(): List<Int> = buttonPressPatterns().first()
     }
 
     fun parse2(input: String): List<MachineJoltage> =
