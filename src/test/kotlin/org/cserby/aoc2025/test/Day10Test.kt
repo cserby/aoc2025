@@ -8,13 +8,13 @@ class Day10Test {
     @Test
     fun part1parseLights() {
         assertEquals(0b0110, Day10.parseExpectedLights("[.##.]"))
-        assertEquals(0b011101, Day10.parseExpectedLights("[.###.#]"))
+        assertEquals(0b101110, Day10.parseExpectedLights("[.###.#]"))
     }
 
     @Test
     fun part1parse() {
         assertEquals(
-            listOf(Day10.Machine(0, 4, 6, listOf(0b1000, 0b1010, 0b100, 0b1100, 0b101, 0b11))),
+            listOf(Day10.Machine(4, 6, listOf(0b1000, 0b1010, 0b100, 0b1100, 0b101, 0b11))),
             Day10.parse("[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"),
         )
     }
@@ -31,11 +31,11 @@ class Day10Test {
 
     @Test
     fun part2example() {
-        assertEquals(-1L, Day10.part2(Utils.readFile("/day10.example.txt")))
+        assertEquals(33, Day10.part2(Utils.readFile("/day10.example.txt")))
     }
 
     @Test
     fun part2() {
-        assertEquals(-1L, Day10.part2(Utils.readFile("/day10.input.txt")))
+        assertEquals(-1, Day10.part2(Utils.readFile("/day10.input.txt")))
     }
 }
