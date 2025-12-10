@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.last
+import kotlin.math.exp
+import kotlin.math.min
 
 object Day10 {
     data class Machine(
@@ -79,47 +81,62 @@ object Day10 {
         val expectedState: List<Int>,
         val buttons: List<List<Int>>,
     ) {
-        private fun startState(width: Int = expectedState.size) = (0 until width).map { 0 }
+        private val startState = (0 until expectedState.size).map { 0 }
 
-        fun pressButtons(pattern: List<Int>): List<Int> =
-            pattern.foldIndexed(startState()) { buttonIndex, state, buttonPressCount ->
-                state.zip(
-                    buttons[buttonIndex].map { it * buttonPressCount },
-                ) { stateValue, buttonPressCount -> stateValue + buttonPressCount }
+        val maxPresses: Map<List<Int>, Int> =
+            buttons.associateWith { button ->
+                expectedState
+                    .zip(button) { stateValue, buttonAffectsState ->
+                        stateValue * buttonAffectsState
+                    }.filterNot { it == 0 }
+                    .min()
             }
 
-        fun maxPresses() = expectedState.max()
+        val pressButtonsMemo = mutableMapOf<List<Int>, List<Int>>()
 
-        private val possiblePressPatternMemo = ConcurrentHashMap<Array<Int>, Boolean>()
+        fun pressButtons(pattern: List<Int>): List<Int> =
+            pressButtonsMemo.getOrPut(pattern) {
+                pattern.foldIndexed(startState) { buttonIndex, stateVector, buttonPressCount ->
+                    stateVector.zip(buttons[buttonIndex]) { stateValue, buttonAffectsState ->
+                        stateValue + buttonAffectsState * buttonPressCount
+                    }
+                }
+            }
+
+        val possiblePressPatternMemo = mutableMapOf<List<Int>, Boolean>()
 
         fun possiblePressPattern(pattern: List<Int>): Boolean =
-            possiblePressPatternMemo.getOrPut(pattern.toTypedArray()) {
+            possiblePressPatternMemo.getOrPut(pattern) {
                 expectedState.zip(pressButtons((0 until buttons.size - pattern.size).map { 0 } + pattern)).all {
                     it.first >= it.second
                 }
             }
 
-        fun buttonPressPatterns(length: Int = buttons.size): Sequence<List<Int>> =
+        fun buttonPressPatterns(): Sequence<List<Int>> =
             sequence {
-                generateSequence(1) { it + 1 }.forEach { yieldAll(buttonPressPatternsForSum(length, it)) }
+                generateSequence(1) { it + 1 }.forEach { numPresses ->
+                    yieldAll(buttonPressPatternsForSum(buttons, numPresses))
+                }
             }
 
         fun buttonPressPatternsForSum(
-            length: Int = buttons.size,
+            buttons: List<List<Int>>,
             sum: Int,
         ): Sequence<List<Int>> =
             sequence {
                 if (sum == 0) {
-                    yield((0 until length).map { 0 })
-                } else if (length == 1) {
+                    yield((0 until buttons.size).map { 0 })
+                } else if (buttons.size == 1) {
                     yield(listOf(sum))
                 } else {
-                    (0 until maxPresses()).forEach { value ->
+                    val button = buttons.first()
+                    val maxPressesForButton = maxPresses[button]!!
+                    (0..min(maxPressesForButton, sum)).forEach { value ->
                         yieldAll(
                             buttonPressPatternsForSum(
-                                length - 1,
+                                buttons.drop(1),
                                 sum - value,
-                            ).map { listOf(value) + it }.filter { possiblePressPattern(it) },
+                            ).map { it + value }.filter { possiblePressPattern(it.reversed()) },
                         )
                     }
                 }
@@ -129,7 +146,7 @@ object Day10 {
             // runBlocking {
             buttonPressPatterns()
                 // .flowOn(Dispatchers.Default)
-                .map { pressButtons(it) to it }
+                .map { pressButtons(it.reversed()) to it }
                 //      .toList()
                 .find { it.first == expectedState }!!
                 .second

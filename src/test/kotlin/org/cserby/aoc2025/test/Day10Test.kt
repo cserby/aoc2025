@@ -57,6 +57,15 @@ class Day10Test {
 
     @Test
     fun part2() {
-        assertEquals(-1, Day10.part2(Utils.readFile("/day10.input.txt")))
+        assertEquals(
+            -1,
+            Day10.part2(
+                Utils
+                    .readFile("/day10.input.txt")
+                    .lines()
+                    .take(1)
+                    .joinToString(separator = "") { it },
+            ),
+        )
     }
 }
