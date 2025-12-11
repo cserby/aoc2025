@@ -1,18 +1,7 @@
 package org.cserby.aoc2025
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.ConcurrentHashMap
+import java.time.LocalDateTime
 import kotlin.collections.last
-import kotlin.math.exp
 import kotlin.math.min
 
 object Day10 {
@@ -94,10 +83,9 @@ object Day10 {
         private fun maxPresses(state: List<Int>): Map<List<Int>, Int> =
             buttons.associateWith { button ->
                 state
-                    .zip(button) { stateValue, buttonAffectsState ->
-                        stateValue * buttonAffectsState
-                    }.filterNot { it == 0 }
-                    .minOrNull() ?: 0
+                    .zip(button)
+                    .filter { it.second != 0 }
+                    .minOfOrNull { it.first } ?: 0
             }
 
         fun pressButtons(pattern: List<Int>): List<Int> =
@@ -106,13 +94,9 @@ object Day10 {
             }
 
         fun possiblePressPatternPrefix(
-            patternPrefix: List<Int>,
+            reducedState: List<Int>,
             sum: Int,
-        ): Boolean =
-            pressButtons(patternPrefix).let { stateSoFar ->
-                stateSoFar.zip(expectedState).all { it.first <= it.second } &&
-                    expectedState.vecMinus(stateSoFar).min() <= sum
-            }
+        ): Boolean = reducedState.all { it >= 0 } && reducedState.min() <= sum
 
         fun buttonPressPatterns(): Sequence<List<Int>> =
             sequence {
@@ -140,8 +124,9 @@ object Day10 {
                     val reducedState = expectedState.vecMinus(pressButtons(prefix))
                     val button = buttons.first()
                     val maxPressesForButton = maxPresses(reducedState)[button]!!
-                    (0..min(maxPressesForButton, sum)).forEach { value ->
-                        if (possiblePressPatternPrefix(prefix + value, sum)) {
+                    (min(maxPressesForButton, sum) downTo 0).forEach { value ->
+                        // All button maxes > sum
+                        if (possiblePressPatternPrefix(reducedState, sum)) {
                             yieldAll(
                                 buttonPressPatternsForSum(
                                     buttons.drop(1),
@@ -174,14 +159,14 @@ object Day10 {
                         buttonSpec.filterNot { it in "()" }.split(",").map { it.toInt() }
                     }.map { buttonIndexes ->
                         (0 until expectedState.size).mapIndexed { index, _ -> if (index in buttonIndexes) 1 else 0 }
-                    },
+                    }.sortedByDescending { it.size },
             )
         }
 
     fun part2(input: String): Int =
         parse2(input)
             .mapIndexed { index, machine ->
-                System.err.println("Processing $index")
+                System.err.println("${LocalDateTime.now()} Processing $index")
                 machine.leastButtonPresses2().sum()
             }.sum()
 }

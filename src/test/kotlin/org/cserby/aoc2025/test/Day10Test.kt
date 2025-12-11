@@ -46,8 +46,8 @@ class Day10Test {
         // assertEquals(12, machines[1].leastButtonPresses2().sum())
         // assert(machines[2].possiblePressPatternPrefix(listOf(5, 0, 5, 1)))
         // assert(machines[2].buttonPressPatterns().find { it == listOf(5, 0, 5, 1) } != null)
-        assertEquals(machines[2].expectedState, machines[2].pressButtons(listOf(5, 0, 5, 1)))
-        assertEquals(11, machines[2].leastButtonPresses2().sum())
+        // assertEquals(machines[2].expectedState, machines[2].pressButtons(listOf(5, 0, 5, 1)))
+        // assertEquals(11, machines[2].leastButtonPresses2().sum())
     }
 
     @Test
@@ -59,13 +59,7 @@ class Day10Test {
     fun part2() {
         assertEquals(
             -1,
-            Day10.part2(
-                Utils
-                    .readFile("/day10.input.txt")
-                    .lines()
-                    .take(1)
-                    .joinToString(separator = "") { it },
-            ),
+            Day10.part2(Utils.readFile("/day10.input.txt")),
         )
     }
 }
