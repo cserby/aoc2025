@@ -70,21 +70,21 @@ object Day10 {
 
     fun part1(input: String): Int = parse(input).sumOf { it.leastButtonPresses().size }
 
-    fun List<Int>.vecMul(by: Int): List<Int> = this.map { it * by }
+    fun IntArray.vecMul(by: Int): IntArray = IntArray(this.size) { i -> this[i] * by }
 
-    fun List<Int>.vecMinus(other: List<Int>) = this.zip(other) { a, b -> a - b }
+    fun IntArray.vecMinus(other: IntArray) = IntArray(this.size) { i -> this[i] - other[i] }
 
-    fun List<Int>.vecAdd(other: List<Int>) = this.zip(other) { a, b -> a + b }
+    fun IntArray.vecAdd(other: IntArray) = IntArray(this.size) { i -> this[i] + other[i] }
 
     data class MachineJoltage(
-        val expectedState: List<Int>,
-        val buttons: List<List<Int>>,
+        val expectedState: IntArray,
+        val buttons: List<IntArray>,
     ) {
-        private val startState = (0 until expectedState.size).map { 0 }
+        private val startState = IntArray(expectedState.size) { 0 }
 
         private val minPresses = expectedState.min()
 
-        private fun maxPresses(state: List<Int>): Map<List<Int>, Int> =
+        private fun maxPresses(state: IntArray): Map<IntArray, Int> =
             buttons.associateWith { button ->
                 state
                     .zip(button)
@@ -92,15 +92,10 @@ object Day10 {
                     .minOfOrNull { it.first } ?: 0
             }
 
-        fun pressButtons(pattern: List<Int>): List<Int> =
+        fun pressButtons(pattern: List<Int>): IntArray =
             pattern.foldIndexed(startState) { buttonIndex, stateVector, buttonPressCount ->
                 stateVector.vecAdd(buttons[buttonIndex].vecMul(buttonPressCount))
             }
-
-        fun possiblePressPatternPrefix(
-            reducedState: List<Int>,
-            sum: Int,
-        ): Boolean = reducedState.all { it >= 0 } && reducedState.min() <= sum
 
         fun buttonPressPatterns(): Sequence<List<Int>> =
             sequence {
@@ -110,32 +105,37 @@ object Day10 {
             }
 
         fun buttonPressPatternsForSum(
-            buttons: List<List<Int>>,
+            buttons: List<IntArray>,
             sum: Int,
             prefix: List<Int>,
+            currentState: IntArray = startState,
         ): Sequence<List<Int>> =
             sequence {
                 if (sum == 0) {
                     val pattern = prefix + (0 until buttons.size).map { 0 }
-                    if (pressButtons(pattern) == expectedState) {
+                    if (currentState.contentEquals(expectedState)) {
                         yield(pattern)
                     }
                 } else if (buttons.size == 1) {
-                    if (pressButtons(prefix + sum) == expectedState) {
+                    if (pressButtons(prefix + sum).contentEquals(expectedState)) {
                         yield(prefix + sum)
                     }
                 } else {
-                    val reducedState = expectedState.vecMinus(pressButtons(prefix))
+                    val reducedState = expectedState.vecMinus(currentState)
                     val button = buttons.first()
-                    val maxPressesForButton = maxPresses(reducedState)[button]!!
-                    (min(maxPressesForButton, sum) downTo 0).forEach { value ->
-                        // All button maxes > sum
-                        if (possiblePressPatternPrefix(reducedState, sum)) {
+                    val maxPresses = maxPresses(reducedState)
+                    val maxPressesForButton = maxPresses[button]!!
+                    if (reducedState.all { it >= 0 } &&
+                        reducedState.min() <= sum &&
+                        maxPresses.values.sum() >= sum
+                    ) {
+                        (min(maxPressesForButton, sum) downTo 0).forEach { value ->
                             yieldAll(
                                 buttonPressPatternsForSum(
                                     buttons.drop(1),
                                     sum - value,
                                     prefix + value,
+                                    currentState.vecAdd(button.vecMul(value)),
                                 ),
                             )
                         }
@@ -153,7 +153,7 @@ object Day10 {
                 .last()
                 .filterNot { it in "{}" }
                 .split(",")
-                .map { it.toInt() }
+                .let { lst -> IntArray(lst.size) { i -> lst[i].toInt() } }
             MachineJoltage(
                 expectedState = expectedState,
                 buttons = lineParts
@@ -162,7 +162,7 @@ object Day10 {
                     .map { buttonSpec ->
                         buttonSpec.filterNot { it in "()" }.split(",").map { it.toInt() }
                     }.map { buttonIndexes ->
-                        (0 until expectedState.size).mapIndexed { index, _ -> if (index in buttonIndexes) 1 else 0 }
+                        IntArray(expectedState.size) { i -> if (i in buttonIndexes) 1 else 0 }
                     }.sortedByDescending { it.size },
             )
         }
