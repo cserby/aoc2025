@@ -7,19 +7,39 @@ object Day11 {
             from to tos.split(" ")
         }
 
-    val allPathsOutMemo = mutableMapOf<String, Int>()
+    val countPathsMemo = mutableMapOf<Pair<String, String>, Long>()
 
-    fun allPathsToOut(
+    fun countPathsTo(
         graph: Map<String, List<String>>,
         from: String,
-    ): Int =
-        if ("out" in graph[from]!!) {
-            1
-        } else {
-            allPathsOutMemo.getOrPut(from) { graph[from]!!.sumOf { allPathsToOut(graph, it) } }
+        to: String,
+    ): Long =
+        graph.getOrDefault(from, emptyList()).let { neighbors ->
+            if (to in neighbors) {
+                1
+            } else if (neighbors.isEmpty()) {
+                0
+            } else {
+                countPathsMemo.getOrPut(from to to) { neighbors.sumOf { countPathsTo(graph, it, to) } }
+            }
         }
 
-    fun part1(input: String): Int = allPathsToOut(parse(input), "you")
+    fun countPathsToOut(
+        graph: Map<String, List<String>>,
+        from: String,
+    ): Long = countPathsTo(graph, from, "out")
 
-    fun part2(input: String): Int = -1
+    fun part1(input: String): Long = countPathsToOut(parse(input), "you")
+
+    fun part2(input: String): Long =
+        parse(input).let { graph ->
+            val fromSvrToDac = countPathsTo(graph, "svr", "dac")
+            val fromDacToFft = countPathsTo(graph, "dac", "fft")
+            val fromFftToOut = countPathsTo(graph, "fft", "out")
+            val fromSvrToFft = countPathsTo(graph, "svr", "fft")
+            val fromFftToDac = countPathsTo(graph, "fft", "dac")
+            val fromDacToOut = countPathsTo(graph, "dac", "out")
+
+            return fromSvrToFft * fromFftToDac * fromDacToOut + fromSvrToDac * fromDacToFft * fromFftToOut
+        }
 }
