@@ -1,5 +1,9 @@
 package org.cserby.aoc2025
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 import kotlin.collections.last
 import kotlin.math.min
@@ -164,9 +168,16 @@ object Day10 {
         }
 
     fun part2(input: String): Int =
-        parse2(input)
-            .mapIndexed { index, machine ->
-                System.err.println("${LocalDateTime.now()} Processing $index")
-                machine.leastButtonPresses2().sum()
-            }.sum()
+        runBlocking(Dispatchers.Default) {
+            parse2(input)
+                .mapIndexed { index, machine ->
+                    async {
+                        System.err.println("${LocalDateTime.now()} Processing $index")
+                        machine.leastButtonPresses2().sum().also {
+                            System.err.println("${LocalDateTime.now()} DONE with $index")
+                        }
+                    }
+                }.awaitAll()
+                .sum()
+        }
 }
